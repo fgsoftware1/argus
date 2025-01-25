@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -336,8 +337,6 @@ var tools = [1][52]map[string]utils.Any{
 	},
 }
 
-//var toolsMapping = make(map[utils.Any]map[string]utils.Any)
-
 var count int = 0
 
 var excludedSections = map[string]struct{}{
@@ -349,6 +348,42 @@ var sectionOrder = []string{
 	"Network & Infrastructure",
 	"Web Application Analysis",
 	"Security & Threat Intelligence",
+}
+
+func getHTTPHeaders(url string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("Error fetching URL:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	specificHeaders := []string{"X-XSS-Protection", "Content-Security-Policy", "Strict-Transport-Security"}
+	fmt.Println("Specific HTTP Headers:")
+	for _, header := range specificHeaders {
+		if value := resp.Header.Get(header); value != "" {
+			fmt.Printf("%s: %s\n", header, value)
+		} else {
+			fmt.Printf("%s: Not present\n", header)
+		}
+	}
+}
+
+func promptForInput() {
+	var input int
+	fmt.Print("Enter a number: ")
+	_, err := fmt.Scan(&input)
+	if err != nil {
+		fmt.Println("Invalid input. Please enter a number.")
+		return
+	}
+
+	if input == 40 {
+		var url string
+		fmt.Print("Enter URL or IP: ")
+		fmt.Scan(&url)
+		getHTTPHeaders(url)
+	}
 }
 
 func main() {
@@ -423,6 +458,8 @@ func main() {
 	}
 
 	t.Render()
+
+	promptForInput()
 }
 
 func CountModules() {
