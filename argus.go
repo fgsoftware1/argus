@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -21,27 +19,6 @@ const (
 	VERSION string = "1.0"
 	AUTHOR  string = "Babywolf(original by Jason13)"
 )
-
-var DNSDUMPSTER_API_KEY string = os.Getenv("DNSDUMPSTER_API_KEY")
-
-type IP struct {
-	ASN         string `json:"asn"`
-	ASNName     string `json:"asn_name"`
-	ASNRange    string `json:"asn_range"`
-	Country     string `json:"country"`
-	CountryCode string `json:"country_code"`
-	IP          string `json:"ip"`
-	PTR         string `json:"ptr"`
-}
-
-type Host struct {
-	Host string `json:"host"`
-	IPs  []IP   `json:"ips"`
-}
-
-type APIResponse struct {
-	A []Host `json:"a"`
-}
 
 var tools = [1][52]map[string]utils.Any{
 	{
@@ -371,40 +348,6 @@ var sectionOrder = []string{
 	"Network & Infrastructure",
 	"Web Application Analysis",
 	"Security & Threat Intelligence",
-}
-
-func getAssociatedHosts(input string) {
-	url := "https://api.dnsdumpster.com/domain/" + input
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatalf("Error creating request: %v", err)
-	}
-
-	// Add API key to headers
-	req.Header.Add("X-API-Key", DNSDUMPSTER_API_KEY)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("Error making request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Request failed with status: %v", resp.Status)
-	}
-
-	// Process the response
-	var apiResponse APIResponse
-	err = json.NewDecoder(resp.Body).Decode(&apiResponse)
-	if err != nil {
-		log.Fatalf("Error decoding response: %v", err)
-	}
-
-	// Format and print the hosts
-	for _, host := range apiResponse.A {
-		fmt.Println(host.Host + " " + host.IPs[0].IP)
-	}
 }
 
 func getHTTPHeaders(url string) {
