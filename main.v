@@ -155,7 +155,12 @@ fn apikeys(){
 
 fn myip(){
 	key := os.getenv("SHODAN_API_KEY")
-	req := http.get("https://api.shodan.io/tools/myip?key=${key}")or{
+	if key == "" {
+		eprintln("Set your Shodan API key first!")
+		apikeys()
+	}
+
+	req := http.get("https://api.shodan.io/tools/myip?key=${key}") or {
 		eprintln("$err")
 		return
 	}
